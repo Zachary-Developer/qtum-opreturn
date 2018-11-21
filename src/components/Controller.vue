@@ -30,7 +30,7 @@ import {QtumRPC} from 'qtumjs'
 import UTXO from '@/components/UTXO'
 import Information from '@/components/Information'
 
-const rpc = new QtumRPC('http://zhen:qtum@localhost:13889')
+const rpc = new QtumRPC('http://user:qtum@localhost:13889')
 export default {
   name: 'Controller',
   components: {Information, UTXO},
