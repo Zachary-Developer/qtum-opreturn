@@ -1,25 +1,23 @@
 <template>
-  <v-container fluid fill-height justify-center>
-    <v-layout column wrap>
-      <v-flex xs10 offset-xs1>
+  <div>
         <input type="file" id="selectFile" name="files[]" @change="fileSelect">
-        <button id="findUTXO" @click="findUTXO">Find UTXO</button>
+        <button id="findUTXO" v-if="items == null" @click="findUTXO">Find UTXO</button>
+        <button id="hideUTXO" v-if="items != null" @click="hideUTXO">Hide UTXO</button>
         <button id="sendData" @click="sendData">Send Data</button>
-        <button id="showData" @click="showData">Show Data</button>
-        <label id="showArray" style="height: 1000px; width:100px"></label>
-        <div id="div_UTXO" style="display: block">
+        <button id="showData" v-if="!isClick" @click="showData">Show Data</button>
+        <button id="clearData" v-if="isClick" @click="clearData">Clear Data</button>
+        <label id="showArray" v-if="fileArray != null" style="height: 1000px; width:100px"></label>
+        <div id="div_UTXO" v-if="items != null">
           <ul>
             <li
-              v-for="item in items"
+              v-for="(obj,item) in items"
               :key="item">
-              <span @click="chooseUTXO">{{item.txid}} - {{item.amount}} Qtum</span>
+              <span @click="chooseUTXO">{{obj.txid}} - {{obj.amount}} Qtum</span>
             </li>
           </ul>
         </div>
-      </v-flex>
       <information v-bind:utxo="selectedItem" v-bind:output="output_qtum" v-bind:tx="tx_qtum" v-bind:transaction="transaction_qtum"></information>
-    </v-layout>
-  </v-container>
+  </div>
   <!--<div id='info'>-->
   <!--<label>{{selectedItem}}</label>-->
   <!--</div>-->
@@ -30,18 +28,19 @@ import {QtumRPC} from 'qtumjs'
 import UTXO from '@/components/UTXO'
 import Information from '@/components/Information'
 
-const rpc = new QtumRPC('http://user:qtum@localhost:13889')
+const rpc = new QtumRPC('http://user:qtum@localhost:8080')
 export default {
   name: 'Controller',
   components: {Information, UTXO},
   data () {
     return {
-      items: [],
+      items: null,
       fileArray: null,
       selectedItem: null,
       output_qtum: null,
       tx_qtum: null,
-      transaction_qtum: []
+      transaction_qtum: [],
+      isClick: false
     }
   },
   methods: {
@@ -77,6 +76,9 @@ export default {
       this.items = list
       // this.$forceUpdate()
     },
+    hideUTXO () {
+      this.items = null
+    },
     chooseUTXO (event) {
       let utxo = event.target
       let labels = document.getElementsByTagName('span')
@@ -87,7 +89,7 @@ export default {
       let txids = utxo.innerHTML.split(' ')
       let txid = txids[0]
       let amount = txids[(txids.length - 2)]
-      console.log(amount)
+      // console.log(amount)
       for (let i = 0; i < this.items.length; i++) {
         let item = this.items[i]
         if (item.txid === txid && item.amount.toString() === amount) {
@@ -119,33 +121,45 @@ export default {
       output = await rpc.rawCall('getrawtransaction', [output, 1])
     },
     async showData () {
-      let n = 100
+      this.isClick = true
+      let n = 1000
       let blockInfo = await rpc.rawCall('getblockchaininfo')
-      console.log(blockInfo)
+      // console.log(blockInfo)
       let height = blockInfo.blocks
-      console.log(height)
+      // console.log(height)
       let blockhash = await rpc.rawCall('getblockhash', [height])
-      console.log(blockhash)
+      // console.log(blockhash)
       let block = await rpc.rawCall('getblock', [blockhash.toString()])
+      this.transaction_qtum = []
       for (let k = 0; k < n; k++) {
         let txs = block.tx
-
-        this.transaction_qtum = []
         for (let i = 0; i < txs.length; i++) {
-          console.log(i)
-          let transaction = await rpc.rawCall('getrawtransaction', [txs[i].toString(), 1])
-          let outs = transaction.vout
-          for (let j = 0; j < outs.length; j++) {
-            console.log(j)
-            if (outs[j].scriptPubKey.type === 'nulldata') {
-              this.transaction_qtum.push(outs[j].scriptPubKey)
+          try {
+            let transaction = await rpc.rawCall('gettransaction', [txs[i]])
+            transaction = await rpc.rawCall('decoderawtransaction', [transaction.hex])
+
+            let outs = transaction.vout
+            for (let j = 0; j < outs.length; j++) {
+              if (outs[j].scriptPubKey.type === 'nulldata') {
+                let txid = transaction.txid
+                let data = outs[j].scriptPubKey.asm.substring(10)
+                // let type = data.substring(0, 2)
+                // if (type === '4b') {
+                this.transaction_qtum.push({'blockheight': block.height, 'txid': txid, 'data': data})
+                // }
+              }
             }
+          } catch (e) {
+            console.log(e)
           }
         }
         blockhash = block.previousblockhash
         block = await rpc.rawCall('getblock', [blockhash.toString()])
       }
-      console.log(this.transaction_qtum)
+    },
+    clearData () {
+      this.transaction_qtum = []
+      this.isClick = false
     }
   }
 

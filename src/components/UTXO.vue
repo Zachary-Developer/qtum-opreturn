@@ -1,9 +1,9 @@
 <template>
   <div>
-      <li>TXID    : {{info.txid}}</li>
-      <li>VOUT    : {{info.vout}}</li>
-      <li>AMOUNT  : {{info.amount}}</li>
-      <li>ADDRESS : {{info.address}}</li>
+      <li v-if="info != null">TXID    : {{info.txid}}</li>
+      <li v-if="info != null">VOUT    : {{info.vout}}</li>
+      <li v-if="info != null">AMOUNT  : {{info.amount}}</li>
+      <li v-if="info != null">ADDRESS : {{info.address}}</li>
   </div>
 </template>
 

@@ -1,27 +1,13 @@
-# qtum-data
+# block-chain-data
 
 > A Vue.js project
 
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
+## open block chain server(like Qtum)
 ```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+$ ~/qtumd -rpcuser=user -rpcpassword=qtum --testnet
+```
+## config CORS Policy
+```
+$ npm install -g local-cors-proxy
+$ lcp --proxyUrl http://localhost:13889  --proxyPartial "" --port 8080
+```

@@ -2,14 +2,18 @@
   <div>
     <u-t-x-o v-bind:info="utxo">
     </u-t-x-o>
-    <li>Output: {{output}}</li>
-    <li>tx : {{tx}}</li>
+    <li v-if="output != null">Output: {{output}}</li>
+    <li v-if="tx != null">tx : {{tx}}</li>
     <div>
       <ul>
         <li
-          v-for="t in transaction"
+          v-for="(object,t) in transaction"
           :key="t">
-          <span>{{t.asm}}</span>
+          <span>Block Height   : {{object.blockheight}}</span>
+          <div></div>
+          <span>TXID   : {{object.txid}}</span>
+          <div></div>
+          <span @mouseover="showConext">OUTPUT : {{object.data}}</span>
         </li>
       </ul>
     </div>
@@ -18,11 +22,40 @@
 
 <script>
 import UTXO from '@/components/UTXO'
+import VTooltip from 'v-tooltip'
 
 export default {
   name: 'Information',
   props: ['output', 'utxo', 'tx', 'transaction'],
-  components: {UTXO}
+  data () {
+    return {
+      msg: {},
+      isShow: {}
+    }
+  },
+  components: {UTXO, VTooltip},
+  methods: {
+    showConext (event) {
+      this.isShow = true
+      let context = event.target.innerHTML
+      context = context.substring(9)
+      // let type = context.substring(0, 2)
+      // let length = context.substring(2, 6)
+      let s = context.substring(6)
+      console.log(s)
+      context = ''
+      for (let i = 0; i < s.length; i += 2) {
+        let c = s.substring(i, i + 2)
+        c = parseInt(c, 16)
+        c = String.fromCharCode(c)
+        context = context + c
+      }
+      console.log(context)
+    },
+    disappearConext () {
+      this.isShow = false
+    }
+  }
 }
 </script>
 
