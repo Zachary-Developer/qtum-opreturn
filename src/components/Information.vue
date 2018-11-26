@@ -42,7 +42,7 @@ export default {
       // let type = context.substring(0, 2)
       // let length = context.substring(2, 6)
       let s = context.substring(6)
-      console.log(s)
+      // console.log(s)
       context = ''
       for (let i = 0; i < s.length; i += 2) {
         let c = s.substring(i, i + 2)

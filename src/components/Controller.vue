@@ -122,7 +122,7 @@ export default {
     },
     async showData () {
       this.isClick = true
-      let n = 1000
+      let n = 50
       let blockInfo = await rpc.rawCall('getblockchaininfo')
       // console.log(blockInfo)
       let height = blockInfo.blocks
@@ -134,23 +134,27 @@ export default {
       for (let k = 0; k < n; k++) {
         let txs = block.tx
         for (let i = 0; i < txs.length; i++) {
+          let transaction = {}
           try {
-            let transaction = await rpc.rawCall('gettransaction', [txs[i]])
-            transaction = await rpc.rawCall('decoderawtransaction', [transaction.hex])
-
-            let outs = transaction.vout
-            for (let j = 0; j < outs.length; j++) {
-              if (outs[j].scriptPubKey.type === 'nulldata') {
-                let txid = transaction.txid
-                let data = outs[j].scriptPubKey.asm.substring(10)
-                // let type = data.substring(0, 2)
-                // if (type === '4b') {
-                this.transaction_qtum.push({'blockheight': block.height, 'txid': txid, 'data': data})
-                // }
-              }
-            }
+            transaction = await rpc.rawCall('getrawtransaction', [txs[i], 1])
           } catch (e) {
-            console.log(e)
+            try {
+              transaction = await rpc.rawCall('gettransaction', [txs[i]])
+              transaction = await rpc.rawCall('decoderawtransaction', [transaction.hex])
+            } catch (e) {
+              continue
+            }
+          }
+          let outs = transaction.vout
+          for (let j = 0; j < outs.length; j++) {
+            if (outs[j].scriptPubKey.type === 'nulldata') {
+              let txid = transaction.txid
+              let data = outs[j].scriptPubKey.asm.substring(10)
+              // let type = data.substring(0, 2)
+              // if (type === '4b') {
+              this.transaction_qtum.push({'blockheight': block.height, 'txid': txid, 'data': data})
+              // }
+            }
           }
         }
         blockhash = block.previousblockhash
