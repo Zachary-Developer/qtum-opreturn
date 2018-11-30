@@ -13,7 +13,7 @@
           <div></div>
           <span>TXID   : {{object.txid}}</span>
           <div></div>
-          <span @mouseover="showConext">OUTPUT : {{object.data}}</span>
+          <span @mouseover="showConext" v-tooltip.right="msg">OUTPUT : {{object.data}}</span>
         </li>
       </ul>
     </div>
@@ -21,9 +21,10 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import UTXO from '@/components/UTXO'
 import VTooltip from 'v-tooltip'
-
+Vue.use(VTooltip)
 export default {
   name: 'Information',
   props: ['output', 'utxo', 'tx', 'transaction'],
@@ -51,9 +52,7 @@ export default {
         context = context + c
       }
       console.log(context)
-    },
-    disappearConext () {
-      this.isShow = false
+      this.msg = context
     }
   }
 }

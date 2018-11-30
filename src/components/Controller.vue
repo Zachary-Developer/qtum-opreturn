@@ -1,7 +1,7 @@
 <template>
   <div>
         <input type="file" id="selectFile" name="files[]" @change="fileSelect">
-        <button id="findUTXO" v-if="items == null" @click="findUTXO">Find UTXO</button>
+        <button id="findUTXO" v-if="items == null" @click="findUTXO" v-tooltip.top-center="">Find UTXO</button>
         <button id="hideUTXO" v-if="items != null" @click="hideUTXO">Hide UTXO</button>
         <button id="sendData" @click="sendData">Send Data</button>
         <button id="showData" v-if="!isClick" @click="showData">Show Data</button>
@@ -40,7 +40,8 @@ export default {
       output_qtum: null,
       tx_qtum: null,
       transaction_qtum: [],
-      isClick: false
+      isClick: false,
+      msg: '123'
     }
   },
   methods: {
@@ -59,8 +60,6 @@ export default {
           let c = fileString.charCodeAt(i)
           array = array + c.toString(16)
         }
-        let t = document.getElementById('showArray')
-        t.innerText = array.toString()
         con.fileArray = array
       }
       reader.readAsText(file)
