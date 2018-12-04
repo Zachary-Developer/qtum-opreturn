@@ -18,9 +18,6 @@
         </div>
       <information v-bind:utxo="selectedItem" v-bind:output="output_qtum" v-bind:tx="tx_qtum" v-bind:transaction="transaction_qtum"></information>
   </div>
-  <!--<div id='info'>-->
-  <!--<label>{{selectedItem}}</label>-->
-  <!--</div>-->
 </template>
 
 <script>
@@ -73,7 +70,6 @@ export default {
         }
       }
       this.items = list
-      // this.$forceUpdate()
     },
     hideUTXO () {
       this.items = null
@@ -88,7 +84,6 @@ export default {
       let txids = utxo.innerHTML.split(' ')
       let txid = txids[0]
       let amount = txids[(txids.length - 2)]
-      // console.log(amount)
       for (let i = 0; i < this.items.length; i++) {
         let item = this.items[i]
         if (item.txid === txid && item.amount.toString() === amount) {
@@ -101,7 +96,6 @@ export default {
         return
       }
       let jsonArg1 = [{'txid': this.selectedItem.txid, 'vout': this.selectedItem.vout}]
-      // let jsonArg2 = {'data': this.fileArray, 'address': this.selectedItem.address, 'amount': (this.selectedItem.amount - 0.001)}
       let jsonArg2 = {'data': this.fileArray}
       var pluginArrayArg = []
       pluginArrayArg.push(jsonArg1)
@@ -123,11 +117,8 @@ export default {
       this.isClick = true
       let n = 50
       let blockInfo = await rpc.rawCall('getblockchaininfo')
-      // console.log(blockInfo)
       let height = blockInfo.blocks
-      // console.log(height)
       let blockhash = await rpc.rawCall('getblockhash', [height])
-      // console.log(blockhash)
       let block = await rpc.rawCall('getblock', [blockhash.toString()])
       this.transaction_qtum = []
       for (let k = 0; k < n; k++) {
@@ -149,10 +140,7 @@ export default {
             if (outs[j].scriptPubKey.type === 'nulldata') {
               let txid = transaction.txid
               let data = outs[j].scriptPubKey.asm.substring(10)
-              // let type = data.substring(0, 2)
-              // if (type === '4b') {
               this.transaction_qtum.push({'blockheight': block.height, 'txid': txid, 'data': data})
-              // }
             }
           }
         }
