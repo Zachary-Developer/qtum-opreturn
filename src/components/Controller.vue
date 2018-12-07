@@ -16,7 +16,7 @@
             </li>
           </ul>
         </div>
-      <information v-bind:utxo="selectedItem" v-bind:output="output_qtum" v-bind:tx="tx_qtum" v-bind:transaction="transaction_qtum"></information>
+      <information v-bind:utxo="selectedItem" v-bind:output="outputInfo" v-bind:tx="txInfo" v-bind:transaction="transactionInfo"></information>
   </div>
 </template>
 
@@ -34,9 +34,9 @@ export default {
       items: null,
       fileArray: null,
       selectedItem: null,
-      output_qtum: null,
-      tx_qtum: null,
-      transaction_qtum: [],
+      outputInfo: null,
+      txInfo: null,
+      transactionInfo: [],
       isClick: false,
       msg: '123'
     }
@@ -101,16 +101,16 @@ export default {
       pluginArrayArg.push(jsonArg1)
       pluginArrayArg.push(jsonArg2)
       let output = await rpc.rawCall('createrawtransaction', pluginArrayArg)
-      this.output_qtum = output
+      this.outputInfo = output
 
       output = [output]
       output = await rpc.rawCall('signrawtransaction', output)
-      this.output_qtum = output
+      this.outputInfo = output
       output = [output.hex]
       console.log(output)
       output = await rpc.rawCall('sendrawtransaction', output)
       console.log(output)
-      this.tx_qtum = output
+      this.txInfo = output
       output = await rpc.rawCall('getrawtransaction', [output, 1])
     },
     async showData () {
@@ -120,27 +120,33 @@ export default {
       let height = blockInfo.blocks
       let blockhash = await rpc.rawCall('getblockhash', [height])
       let block = await rpc.rawCall('getblock', [blockhash.toString()])
-      this.transaction_qtum = []
+      this.transactionInfo = []
       for (let k = 0; k < n; k++) {
         let txs = block.tx
         for (let i = 0; i < txs.length; i++) {
-          let transaction = {}
+          let transaction = null
           try {
             transaction = await rpc.rawCall('getrawtransaction', [txs[i], 1])
           } catch (e) {
+            transaction = null
+          }
+          if (transaction == null) {
             try {
               transaction = await rpc.rawCall('gettransaction', [txs[i]])
               transaction = await rpc.rawCall('decoderawtransaction', [transaction.hex])
             } catch (e) {
-              continue
+              transaction = null
             }
+          }
+          if (transaction == null) {
+            continue
           }
           let outs = transaction.vout
           for (let j = 0; j < outs.length; j++) {
             if (outs[j].scriptPubKey.type === 'nulldata') {
               let txid = transaction.txid
               let data = outs[j].scriptPubKey.asm.substring(10)
-              this.transaction_qtum.push({'blockheight': block.height, 'txid': txid, 'data': data})
+              this.transactionInfo.push({'blockheight': block.height, 'txid': txid, 'data': data})
             }
           }
         }
@@ -149,7 +155,7 @@ export default {
       }
     },
     clearData () {
-      this.transaction_qtum = []
+      this.transactionInfo = []
       this.isClick = false
     }
   }
